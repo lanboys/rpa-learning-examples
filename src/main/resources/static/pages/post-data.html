@@ -19,6 +19,19 @@
             margin: 10px;
             padding: 10px;
             border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title {
+            margin-bottom: 10px;
+        }
+
+        .details {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
         }
 
         .pagination {
@@ -40,6 +53,15 @@
 
 <ul id="articleList" class="article-list">
     <!-- Article items will be dynamically added here -->
+    <li class="article-template" style="display: none;">
+        <div class="article">
+            <div class="title"></div>
+            <div class="details">
+                <span class="reads"></span>
+                <span class="likes"></span>
+            </div>
+        </div>
+    </li>
 </ul>
 
 <ul id="pagination" class="pagination">
@@ -63,26 +85,42 @@
             xhr.send();
         }
 
-        function createArticleHTML(article) {
-            return `
-                <li class="article">
-                    <strong>${article.title}</strong> - Reads: ${article.reads}, Likes: ${article.likes}
-                </li>`;
+        function createArticleElement(template, article) {
+            const articleElement = template.cloneNode(true);
+            articleElement.style.display = 'block';
+
+            const titleElement = articleElement.querySelector('.title');
+            const readsElement = articleElement.querySelector('.reads');
+            const likesElement = articleElement.querySelector('.likes');
+
+            titleElement.textContent = article.title;
+            readsElement.textContent = `Reads: ${article.reads}`;
+            likesElement.textContent = `Likes: ${article.likes}`;
+
+            return articleElement;
         }
 
         function createPaginationItemHTML(index) {
-            return `
-                <li class="pagination-item" onclick="goToPage(${index})">${index}</li>`;
+            const li = document.createElement('li');
+            li.className = 'pagination-item';
+            li.textContent = index;
+            li.addEventListener('click', () => {
+                goToPage(index);
+            });
+            return li;
         }
 
         function displayArticles(page) {
             const apiUrlWithPage = `${apiUrl}&current=${page}`;
             fetchData(apiUrlWithPage, data => {
                 const articleList = document.getElementById('articleList');
+                const articleTemplate = document.querySelector('.article-template');
+
                 articleList.innerHTML = '';
 
                 data.records.forEach(article => {
-                    articleList.innerHTML += createArticleHTML(article);
+                    const articleElement = createArticleElement(articleTemplate, article);
+                    articleList.appendChild(articleElement);
                 });
             });
         }
@@ -92,7 +130,8 @@
             pagination.innerHTML = '';
 
             for (let i = 1; i <= totalPages; i++) {
-                pagination.innerHTML += createPaginationItemHTML(i);
+                const paginationItem = createPaginationItemHTML(i);
+                pagination.appendChild(paginationItem);
             }
         }
 
