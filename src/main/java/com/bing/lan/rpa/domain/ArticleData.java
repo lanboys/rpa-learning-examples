@@ -12,5 +12,6 @@ public class ArticleData {
   private String title;
   private String reads;
   private String likes;
+  private String avatar;
 
 }

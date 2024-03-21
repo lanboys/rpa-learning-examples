@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无限向下滚动</title>
+    <style>
+    /* CSS样式可以根据实际需求进行调整 */
+    .list-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .list-item {
+        border-bottom: 1px solid #ccc;
+        padding: 10px;
+    }
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 10px;
+    }
+</style>
+</head>
+<body>
+<div class="list-container" id="listContainer"></div>
+
+<!-- 用于克隆的列表项模板 -->
+<template id="listItemTemplate">
+    <div class="list-item">
+        <div class="date"></div>
+        <ul class="sub-list"></ul>
+    </div>
+</template>
+
+<!-- JavaScript代码将在这里编写 -->
+<script>
+console.log("8888888")
+
+   document.addEventListener('DOMContentLoaded', function () {
+    const listContainer = document.getElementById('listContainer');
+    const listItemTemplate = document.getElementById('listItemTemplate');
+
+    let page = 1;
+console.log("8888888")
+
+    async function fetchData(page) {
+        try {
+            const response = await fetch(`http://localhost:8080/test/page2?size=10&current=${page}`);
+            const data = await response.json();
+            console.log("2222")
+
+            return data;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            return [];
+        }
+    }
+
+    async function renderData() {
+        const data = await fetchData(page);
+        data.records.forEach(item => {
+            const clone = listItemTemplate.content.cloneNode(true);
+            const dateElement = clone.querySelector('.date');
+            const subList = clone.querySelector('.sub-list');
+
+            dateElement.textContent = item.date;
+
+            item.dataList.forEach(subItem => {
+                const li = document.createElement('li');
+                li.textContent = `${subItem.title} - Read: ${subItem.reads} - Likes: ${subItem.likes}`;
+
+                const avatarImg = document.createElement('img');
+                avatarImg.src = subItem.avatar;
+                avatarImg.alt = 'Avatar';
+                avatarImg.classList.add('avatar');
+
+<!--                li.prepend(avatarImg);-->
+                subList.appendChild(li);
+            });
+
+            listContainer.appendChild(clone);
+        });
+
+        page++;
+    }
+
+    // 初始加载第一页数据
+    renderData();
+
+    // 监听滚动事件，当滚动到底部时加载下一页数据
+    window.addEventListener('scroll', function () {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+            renderData();
+        }
+    });
+});
+
+    </script>
+</body>
+</html>
